@@ -36,13 +36,16 @@ jobs:
   docker:
     needs: tagging
     uses: ./.github/workflows/build-docker.yml
-    strategy:
-      matrix:
-        target: ["linux/amd64", "linux/amd64,linux/arm64"]
     with:
       version: ${{ needs.tagging.outputs.version }}
       dry_run: ${{ inputs.dry_run || false }}
-      target: ${{ matrix.target }}
+      # Both platforms in a single buildx run. They previously ran as two
+      # parallel jobs pushing the same tags, which is a race: whichever finished
+      # last won, so the amd64-only job could overwrite the multi-arch manifest.
+      target: linux/amd64,linux/arm64
+      # Repository variable, so a fork publishes under its own account without
+      # editing the workflow. Empty falls back to <dockerhub-user>/artalk.
+      image: ${{ vars.DOCKER_IMAGE }}
     secrets: inherit
 
   app:
