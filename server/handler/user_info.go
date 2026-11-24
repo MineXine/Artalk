@@ -63,7 +63,7 @@ func UserInfo(app *core.App, router fiber.Router) {
 		// Names and email addresses are not proof of identity. Keep only public
 		// profile fields for anonymous autocomplete and the admin login prompt.
 		userDTO := entity.UserDTO{
-			ID: user.ID, Name: user.Name, Link: user.Link,
+			ID: user.ID, UID: user.UID, Name: user.Name, Link: user.Link,
 			BadgeName: user.BadgeName, BadgeColor: user.BadgeColor, IsAdmin: user.IsAdmin,
 		}
 		if isLogin {

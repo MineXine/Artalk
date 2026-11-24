@@ -123,6 +123,16 @@ func Serve(app *core.App) (*fiber.App, error) {
 		h.UserIdentityUnbind(app, api)
 		h.UserActivity(app, api)
 
+		// rewards: points / badges / lucky uid
+		h.PointsGet(app, api)
+		h.PointsCheckin(app, api)
+		h.BadgeList(app, api)
+		h.BadgeExchange(app, api)
+		h.BadgeEquip(app, api)
+		h.BadgeUnequip(app, api)
+		h.UIDQuote(app, api)
+		h.UIDExchange(app, api)
+
 		// admin
 		admin(app, api)
 	}
@@ -168,6 +178,15 @@ func admin(app *core.App, api fiber.Router) {
 	h.UserCreate(app, api)
 	h.UserUpdate(app, api)
 	h.UserDelete(app, api)
+	// rewards: badge library & per-user points/badges
+	h.BadgeAdminList(app, api)
+	h.BadgeAdminCreate(app, api)
+	h.BadgeAdminUpdate(app, api)
+	h.BadgeAdminDelete(app, api)
+	h.UserPointsAdjust(app, api)
+	h.UserBadgesList(app, api)
+	h.UserBadgeGrant(app, api)
+	h.UserBadgeRevoke(app, api)
 	h.Dashboard(app, api)
 	h.ModerationLogList(app, api)
 	h.ModerationLogDelete(app, api)

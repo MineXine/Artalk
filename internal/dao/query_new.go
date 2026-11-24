@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"fmt"
+
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/internal/log"
 )
@@ -50,7 +52,27 @@ func (dao *Dao) NewUser(name string, email string, link string) (entity.User, er
 }
 
 func (dao *Dao) CreateUser(user *entity.User) error {
-	err := dao.DB().Create(&user).Error
+	// 没有指定 UID 时自动分配一个。导入场景可以显式带入原编号，此处不覆盖。
+	if user.UID == 0 {
+		var lastErr error
+		for attempt := 0; attempt < entity.MaxUIDExchangeRetries; attempt++ {
+			user.UID = dao.nextUserUIDAfterMax()
+			if lastErr = dao.DB().Create(user).Error; lastErr == nil {
+				dao.CacheAction(func(cache *DaoCache) {
+					cache.UserCacheSave(user)
+				})
+				return nil
+			}
+			if !isUniqueViolation(lastErr) {
+				return lastErr
+			}
+			// 候选编号被并发插入的用户抢走了：清掉可能被回填的主键再试。
+			user.ID = 0
+		}
+		return fmt.Errorf("create user: %w", lastErr)
+	}
+
+	err := dao.DB().Create(user).Error
 	if err != nil {
 		return err
 	}

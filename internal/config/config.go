@@ -33,6 +33,7 @@ type Config struct {
 	AdminNotify    AdminNotifyConf        `koanf:"admin_notify" json:"admin_notify"`       // 其他通知方式
 	Auth           AuthConf               `koanf:"auth" json:"auth"`                       // Social Login
 	Console        ConsoleConf            `koanf:"console" json:"console"`                 // 控制台品牌信息与自定义 CSS / JS
+	Rewards        RewardsConf            `koanf:"rewards" json:"rewards"`                 // 积分 / 徽章 / UID 靓号
 	Frontend       map[string]interface{} `koanf:"frontend" json:"frontend"`
 
 	PageTitleAutoFetch bool `koanf:"page_title_auto_fetch" json:"page_title_auto_fetch"` // 自动抓取页面标题（默认关闭）

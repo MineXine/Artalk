@@ -266,6 +266,36 @@ security:
   # 从安全防护中排除的路径 (按后缀匹配)
   exclude_paths: []
 
+# 积分、徽章与 UID 靓号
+# 徽章和靓号都是用积分兑换，因此共用一个总开关。
+rewards:
+  enabled: false
+  points:
+    # 每发表一条评论获得的积分
+    comment_create: 5
+    # 评论积分的每日上限，避免靠灌水刷分换靓号
+    comment_create_daily_cap: 30
+    # 评论每被赞一次获得的积分
+    vote_received: 1
+    # 每日签到获得的积分
+    checkin: 10
+  badges:
+    enabled: false
+    # 同时佩戴的徽章数量（当前仅支持 1）
+    max_equipped: 1
+  uid:
+    enabled: false
+    # 各等级靓号的价格（积分）
+    #   s: 全位相同（88888）
+    #   a: 顺子（12345）或回文（12321）
+    #   b: 尾部三位相同（12888）
+    #   c: 尾部两位相同（12388）
+    price:
+      s: 8000
+      a: 3000
+      b: 1200
+      c: 400
+
 # 控制台外观
 console:
   # 控制台名称，显示在侧栏与登录页（留空为 Artalk）

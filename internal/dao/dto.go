@@ -48,6 +48,7 @@ func (dao *Dao) BuildCommentDTO(c *entity.Comment) entity.CommentDTO {
 		Content:        c.Content,
 		ContentMarked:  markedContent,
 		UserID:         c.UserID,
+		UID:            user.UID,
 		IsAIAssistant:  user.IsAIAssistant,
 		Nick:           user.Name,
 		EmailEncrypted: getCommentEmailHash(user.Email),
@@ -181,6 +182,7 @@ func (dao *Dao) FindAllSiteDTOs() []entity.SiteDTO {
 func (dao *Dao) BuildUserDTO(u *entity.User) entity.UserDTO {
 	return entity.UserDTO{
 		ID:            u.ID,
+		UID:           u.UID,
 		Name:          u.Name,
 		Email:         u.Email,
 		Link:          u.Link,
@@ -190,6 +192,7 @@ func (dao *Dao) BuildUserDTO(u *entity.User) entity.UserDTO {
 		IsAIAssistant: u.IsAIAssistant,
 		HasPassword:   strings.TrimSpace(u.Password) != "",
 		ReceiveEmail:  u.ReceiveEmail,
+		Points:        u.Points,
 	}
 }
 

@@ -254,6 +254,36 @@ security:
   # Paths excluded from the guard (suffix match)
   exclude_paths: []
 
+# Points, badges and lucky-UID rewards
+# Both badges and lucky UIDs are bought with points, so they share one switch.
+rewards:
+  enabled: false
+  points:
+    # Points granted for each newly created comment
+    comment_create: 5
+    # Daily cap for comment points, so comment spam cannot farm a lucky UID
+    comment_create_daily_cap: 30
+    # Points granted for each upvote a comment receives
+    vote_received: 1
+    # Points granted for the daily check-in
+    checkin: 10
+  badges:
+    enabled: false
+    # How many badges can be worn at once (currently only 1 is supported)
+    max_equipped: 1
+  uid:
+    enabled: false
+    # Price in points, per tier:
+    #   s: every digit identical (88888)
+    #   a: sequential (12345) or palindrome (12321)
+    #   b: last three digits identical (12888)
+    #   c: last two digits identical (12388)
+    price:
+      s: 8000
+      a: 3000
+      b: 1200
+      c: 400
+
 # Console appearance
 console:
   # Name shown in the console header and on the sign-in page (empty = Artalk)

@@ -266,6 +266,36 @@ security:
   # 從安全防護中排除的路徑 (按後綴匹配)
   exclude_paths: []
 
+# 積分、徽章與 UID 靚號
+# 徽章和靚號都是用積分兌換，因此共用一個總開關。
+rewards:
+  enabled: false
+  points:
+    # 每發表一則評論獲得的積分
+    comment_create: 5
+    # 評論積分的每日上限，避免靠灌水刷分換靚號
+    comment_create_daily_cap: 30
+    # 評論每被讚一次獲得的積分
+    vote_received: 1
+    # 每日簽到獲得的積分
+    checkin: 10
+  badges:
+    enabled: false
+    # 同時佩戴的徽章數量（目前僅支援 1）
+    max_equipped: 1
+  uid:
+    enabled: false
+    # 各等級靚號的價格（積分）
+    #   s: 全位相同（88888）
+    #   a: 順子（12345）或回文（12321）
+    #   b: 尾部三位相同（12888）
+    #   c: 尾部兩位相同（12388）
+    price:
+      s: 8000
+      a: 3000
+      b: 1200
+      c: 400
+
 # 管理後台站點資訊與自訂內容
 console:
   # 控制台名稱，顯示在側欄與登入頁（留空為 Artalk）

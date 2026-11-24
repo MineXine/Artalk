@@ -248,6 +248,36 @@ security:
   # Korumadan hariç tutulan yollar (son ek eşleşmesi)
   exclude_paths: []
 
+# Puanlar, rozetler ve özel UID'ler
+# Rozetler ve UID'ler puanla alındığı için tek bir anahtar paylaşırlar.
+rewards:
+  enabled: false
+  points:
+    # Yayınlanan her yorum için verilen puan
+    comment_create: 5
+    # Yorum puanının günlük üst sınırı (spam ile UID almayı engeller)
+    comment_create_daily_cap: 30
+    # Bir yorumun aldığı her beğeni için verilen puan
+    vote_received: 1
+    # Günlük giriş için verilen puan
+    checkin: 10
+  badges:
+    enabled: false
+    # Aynı anda takılabilecek rozet sayısı (şu an yalnızca 1)
+    max_equipped: 1
+  uid:
+    enabled: false
+    # Seviye başına puan cinsinden fiyat:
+    #   s: tüm rakamlar aynı (88888)
+    #   a: ardışık (12345) veya palindrom (12321)
+    #   b: son üç rakam aynı (12888)
+    #   c: son iki rakam aynı (12388)
+    price:
+      s: 8000
+      a: 3000
+      b: 1200
+      c: 400
+
 # Yönetim konsolu kimliği ve özelleştirme
 console:
   # Konsolda ve giriş sayfasında görünen ad (boş = Artalk)

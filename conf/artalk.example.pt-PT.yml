@@ -191,6 +191,36 @@ security:
   # Caminhos excluídos da proteção (correspondência por sufixo)
   exclude_paths: []
 
+# Pontos, distintivos e UIDs especiais
+# Distintivos e UIDs são comprados com pontos, por isso partilham um só interruptor.
+rewards:
+  enabled: false
+  points:
+    # Pontos por cada comentário publicado
+    comment_create: 5
+    # Limite diário dos pontos de comentário, para evitar spam a trocar por UIDs
+    comment_create_daily_cap: 30
+    # Pontos por cada voto positivo recebido num comentário
+    vote_received: 1
+    # Pontos pelo check-in diário
+    checkin: 10
+  badges:
+    enabled: false
+    # Quantos distintivos podem estar em uso ao mesmo tempo (apenas 1 por agora)
+    max_equipped: 1
+  uid:
+    enabled: false
+    # Preço em pontos, por nível:
+    #   s: todos os dígitos iguais (88888)
+    #   a: sequência (12345) ou capicua (12321)
+    #   b: últimos três dígitos iguais (12888)
+    #   c: últimos dois dígitos iguais (12388)
+    price:
+      s: 8000
+      a: 3000
+      b: 1200
+      c: 400
+
 # Identidade visual e personalização do painel de gestão
 console:
   # Nome mostrado no painel e na página de acesso (vazio = Artalk)

@@ -384,6 +384,518 @@ const docTemplate = `{
                 }
             }
         },
+        "/badges": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Return the badge library with the caller's ownership and progress",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "List badges",
+                "operationId": "GetBadges",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseBadges"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Create a badge",
+                "operationId": "AdminCreateBadge",
+                "parameters": [
+                    {
+                        "description": "The badge",
+                        "name": "badge",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsBadgeUpsert"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Badge"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badges/all": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "List all badges including disabled ones",
+                "operationId": "AdminListBadges",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseBadgeAdminList"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badges/equip": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Take off the current badge",
+                "operationId": "UnequipBadge",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badges/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Update a badge",
+                "operationId": "AdminUpdateBadge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Badge ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The badge",
+                        "name": "badge",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsBadgeUpsert"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Badge"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Delete a badge and every ownership of it",
+                "operationId": "AdminDeleteBadge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Badge ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badges/{id}/equip": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Only one badge can be equipped at a time; equipping replaces the current one",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Equip a badge",
+                "operationId": "EquipBadge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Badge ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badges/{id}/exchange": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Exchange a badge with points",
+                "operationId": "ExchangeBadge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Badge ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseBadgeMutation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/cache/flush": {
             "post": {
                 "security": [
@@ -1985,6 +2497,126 @@ const docTemplate = `{
                 }
             }
         },
+        "/points": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Return the current balance, today's check-in state and recent transactions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Get my points",
+                "operationId": "GetPoints",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponsePoints"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/points/checkin": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Award points once per local day, repeated calls are no-ops",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Daily check-in",
+                "operationId": "Checkin",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseCheckin"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/security/bans": {
             "get": {
                 "security": [
@@ -3247,6 +3879,153 @@ const docTemplate = `{
                 }
             }
         },
+        "/uid/exchange": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Replace the caller's UID with a purchased lucky number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Exchange a lucky UID with points",
+                "operationId": "ExchangeUID",
+                "parameters": [
+                    {
+                        "description": "The UID to buy",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsUIDExchange"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUIDExchange"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/uid/quote": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Report whether a UID is a \"lucky number\", its tier and its price",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Price a UID",
+                "operationId": "QuoteUID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The UID to price",
+                        "name": "uid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUIDQuote"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/upload": {
             "post": {
                 "security": [
@@ -4218,6 +4997,298 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/{id}/badges": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "List a user's badges",
+                "operationId": "AdminListUserBadges",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseUserBadges"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/badges/{badgeId}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Grant a badge to a user",
+                "operationId": "AdminGrantUserBadge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Badge ID",
+                        "name": "badgeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Take a badge back from a user",
+                "operationId": "AdminRevokeUserBadge",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Badge ID",
+                        "name": "badgeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/points": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Adjust a user's points",
+                "operationId": "AdminAdjustPoints",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The adjustment",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsAdminAdjustPoints"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseAdminAdjustPoints"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users/{type}": {
             "get": {
                 "security": [
@@ -4691,6 +5762,99 @@ const docTemplate = `{
                 }
             }
         },
+        "core.BadgeView": {
+            "type": "object",
+            "required": [
+                "achieved",
+                "color",
+                "condition_kind",
+                "condition_value",
+                "created_at",
+                "description",
+                "enabled",
+                "equipped",
+                "grant_type",
+                "icon",
+                "id",
+                "key",
+                "name",
+                "owned",
+                "price",
+                "progress",
+                "sort_order",
+                "target",
+                "updated_at"
+            ],
+            "properties": {
+                "achieved": {
+                    "description": "Achieved 表示条件型徽章当前是否已达标（用于展示进度条）。",
+                    "type": "boolean"
+                },
+                "color": {
+                    "description": "Color 允许 hex（#ff8800）或语义名（orange），前端原样输出到 CSS 变量。",
+                    "type": "string"
+                },
+                "condition_kind": {
+                    "$ref": "#/definitions/entity.BadgeConditionKind"
+                },
+                "condition_value": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description 说明这枚徽章怎么来的，会展示在徽章墙上。",
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "equipped": {
+                    "type": "boolean"
+                },
+                "grant_type": {
+                    "$ref": "#/definitions/entity.BadgeGrantType"
+                },
+                "icon": {
+                    "description": "图标 URL 或单个 emoji",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "description": "稳定标识，供 API、导入导出引用",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "展示名",
+                    "type": "string"
+                },
+                "owned": {
+                    "type": "boolean"
+                },
+                "price": {
+                    "description": "Price 是兑换所需积分，0 表示不可用积分购买。",
+                    "type": "integer"
+                },
+                "progress": {
+                    "type": "integer"
+                },
+                "sort_order": {
+                    "type": "integer"
+                },
+                "source": {
+                    "$ref": "#/definitions/entity.BadgeSource"
+                },
+                "target": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.AdminUserDTO": {
             "type": "object",
             "required": [
@@ -4707,7 +5871,9 @@ const docTemplate = `{
                 "last_ua",
                 "link",
                 "name",
-                "receive_email"
+                "points",
+                "receive_email",
+                "uid"
             ],
             "properties": {
                 "badge_color": {
@@ -4757,10 +5923,144 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "points": {
+                    "description": "Points 只在本人登录查询时填充，匿名查询恒为 0。",
+                    "type": "integer"
+                },
                 "receive_email": {
                     "type": "boolean"
+                },
+                "uid": {
+                    "description": "UID 是面向用户的业务编号（门牌号），可公开，用于展示与分享。",
+                    "type": "integer"
                 }
             }
+        },
+        "entity.Badge": {
+            "type": "object",
+            "required": [
+                "color",
+                "condition_kind",
+                "condition_value",
+                "created_at",
+                "description",
+                "enabled",
+                "grant_type",
+                "icon",
+                "id",
+                "key",
+                "name",
+                "price",
+                "sort_order",
+                "updated_at"
+            ],
+            "properties": {
+                "color": {
+                    "description": "Color 允许 hex（#ff8800）或语义名（orange），前端原样输出到 CSS 变量。",
+                    "type": "string"
+                },
+                "condition_kind": {
+                    "$ref": "#/definitions/entity.BadgeConditionKind"
+                },
+                "condition_value": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description 说明这枚徽章怎么来的，会展示在徽章墙上。",
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "grant_type": {
+                    "$ref": "#/definitions/entity.BadgeGrantType"
+                },
+                "icon": {
+                    "description": "图标 URL 或单个 emoji",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "description": "稳定标识，供 API、导入导出引用",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "展示名",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price 是兑换所需积分，0 表示不可用积分购买。",
+                    "type": "integer"
+                },
+                "sort_order": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.BadgeConditionKind": {
+            "type": "string",
+            "enum": [
+                "none",
+                "comment_count",
+                "vote_received",
+                "register_days",
+                "points"
+            ],
+            "x-enum-varnames": [
+                "BadgeConditionNone",
+                "BadgeConditionCommentCount",
+                "BadgeConditionVoteReceived",
+                "BadgeConditionRegisterDays",
+                "BadgeConditionPoints"
+            ]
+        },
+        "entity.BadgeGrantType": {
+            "type": "string",
+            "enum": [
+                "condition",
+                "exchange",
+                "manual"
+            ],
+            "x-enum-varnames": [
+                "BadgeGrantCondition",
+                "BadgeGrantExchange",
+                "BadgeGrantManual"
+            ]
+        },
+        "entity.BadgeSource": {
+            "type": "string",
+            "enum": [
+                "condition",
+                "exchange",
+                "manual",
+                "import"
+            ],
+            "x-enum-comments": {
+                "BadgeSourceCondition": "自动达成",
+                "BadgeSourceExchange": "积分兑换",
+                "BadgeSourceImport": "数据迁移带过来的",
+                "BadgeSourceManual": "管理员授予"
+            },
+            "x-enum-descriptions": [
+                "自动达成",
+                "积分兑换",
+                "管理员授予",
+                "数据迁移带过来的"
+            ],
+            "x-enum-varnames": [
+                "BadgeSourceCondition",
+                "BadgeSourceExchange",
+                "BadgeSourceManual",
+                "BadgeSourceImport"
+            ]
         },
         "entity.CommentDTO": {
             "type": "object",
@@ -4784,6 +6084,7 @@ const docTemplate = `{
                 "rid",
                 "site_name",
                 "ua",
+                "uid",
                 "user_id",
                 "visible",
                 "vote_down",
@@ -4852,6 +6153,10 @@ const docTemplate = `{
                 },
                 "ua": {
                     "type": "string"
+                },
+                "uid": {
+                    "description": "评论者的业务编号，与 UserDTO.UID 同源",
+                    "type": "integer"
                 },
                 "user_id": {
                     "type": "integer"
@@ -5075,6 +6380,52 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.PointTransaction": {
+            "type": "object",
+            "required": [
+                "amount",
+                "balance",
+                "created_at",
+                "id",
+                "note",
+                "reason",
+                "ref_id",
+                "ref_type",
+                "user_id"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "正数入账，负数出账",
+                    "type": "integer"
+                },
+                "balance": {
+                    "description": "变动后余额",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "ref_id": {
+                    "type": "integer"
+                },
+                "ref_type": {
+                    "description": "RefType / RefID 指向触发这次变动的对象，如 comment:123、badge:4。",
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "entity.SiteDTO": {
             "type": "object",
             "required": [
@@ -5116,7 +6467,9 @@ const docTemplate = `{
                 "is_admin",
                 "link",
                 "name",
-                "receive_email"
+                "points",
+                "receive_email",
+                "uid"
             ],
             "properties": {
                 "badge_color": {
@@ -5146,8 +6499,16 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "points": {
+                    "description": "Points 只在本人登录查询时填充，匿名查询恒为 0。",
+                    "type": "integer"
+                },
                 "receive_email": {
                     "type": "boolean"
+                },
+                "uid": {
+                    "description": "UID 是面向用户的业务编号（门牌号），可公开，用于展示与分享。",
+                    "type": "integer"
                 }
             }
         },
@@ -5178,6 +6539,21 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": true
         },
+        "handler.ParamsAdminAdjustPoints": {
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "Amount 为增量，可正可负；扣减时余额不足会被拒绝",
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.ParamsAuthSSOExchange": {
             "type": "object",
             "required": [
@@ -5187,6 +6563,57 @@ const docTemplate = `{
                 "token": {
                     "description": "External IdP access token (e.g. an Auth0 access token)",
                     "type": "string"
+                }
+            }
+        },
+        "handler.ParamsBadgeUpsert": {
+            "type": "object",
+            "required": [
+                "grant_type",
+                "key",
+                "name"
+            ],
+            "properties": {
+                "color": {
+                    "description": "hex or a CSS color name",
+                    "type": "string"
+                },
+                "condition_kind": {
+                    "description": "ConditionKind 仅对 condition 类有意义",
+                    "type": "string"
+                },
+                "condition_value": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "description": "Enabled 用指针区分\"没传\"与\"传了 false\"",
+                    "type": "boolean"
+                },
+                "grant_type": {
+                    "description": "GrantType 决定徽章在列表里的归类：condition / exchange / manual",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "icon URL or a single emoji",
+                    "type": "string"
+                },
+                "key": {
+                    "description": "Stable identifier, kebab-case",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Display name",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price 为 0 表示不能用积分购买",
+                    "type": "integer"
+                },
+                "sort_order": {
+                    "type": "integer"
                 }
             }
         },
@@ -5609,6 +7036,18 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ParamsUIDExchange": {
+            "type": "object",
+            "required": [
+                "uid"
+            ],
+            "properties": {
+                "uid": {
+                    "description": "The UID to buy",
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ParamsUserCreate": {
             "type": "object",
             "required": [
@@ -5831,6 +7270,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseAdminAdjustPoints": {
+            "type": "object",
+            "required": [
+                "points"
+            ],
+            "properties": {
+                "points": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseAdminUserList": {
             "type": "object",
             "required": [
@@ -5895,6 +7345,58 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseBadgeAdminList": {
+            "type": "object",
+            "required": [
+                "badges"
+            ],
+            "properties": {
+                "badges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Badge"
+                    }
+                }
+            }
+        },
+        "handler.ResponseBadgeMutation": {
+            "type": "object",
+            "required": [
+                "points"
+            ],
+            "properties": {
+                "points": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ResponseBadges": {
+            "type": "object",
+            "required": [
+                "badges",
+                "is_login",
+                "points",
+                "uid"
+            ],
+            "properties": {
+                "badges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.BadgeView"
+                    }
+                },
+                "is_login": {
+                    "description": "IsLogin 为 false 时 Badges 里的 owned / equipped 一律为 false，\n但徽章库本身仍然可见，未注册访客也能看到有哪些徽章可以拿。",
+                    "type": "boolean"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseCaptchaGet": {
             "type": "object",
             "required": [
@@ -5914,6 +7416,28 @@ const docTemplate = `{
             "properties": {
                 "is_pass": {
                     "type": "boolean"
+                }
+            }
+        },
+        "handler.ResponseCheckin": {
+            "type": "object",
+            "required": [
+                "awarded",
+                "checked_in",
+                "points"
+            ],
+            "properties": {
+                "awarded": {
+                    "description": "本次获得的积分，0 表示今天已签过",
+                    "type": "integer"
+                },
+                "checked_in": {
+                    "description": "本次是否真的签到成功",
+                    "type": "boolean"
+                },
+                "points": {
+                    "description": "最新余额",
+                    "type": "integer"
                 }
             }
         },
@@ -5939,6 +7463,7 @@ const docTemplate = `{
                 "rid",
                 "site_name",
                 "ua",
+                "uid",
                 "user_id",
                 "visible",
                 "vote_down",
@@ -6007,6 +7532,10 @@ const docTemplate = `{
                 },
                 "ua": {
                     "type": "string"
+                },
+                "uid": {
+                    "description": "评论者的业务编号，与 UserDTO.UID 同源",
+                    "type": "integer"
                 },
                 "user_id": {
                     "type": "integer"
@@ -6100,6 +7629,7 @@ const docTemplate = `{
                 "rid",
                 "site_name",
                 "ua",
+                "uid",
                 "user_id",
                 "visible",
                 "vote_down",
@@ -6168,6 +7698,10 @@ const docTemplate = `{
                 },
                 "ua": {
                     "type": "string"
+                },
+                "uid": {
+                    "description": "评论者的业务编号，与 UserDTO.UID 同源",
+                    "type": "integer"
                 },
                 "user_id": {
                     "type": "integer"
@@ -6416,6 +7950,59 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponsePoints": {
+            "type": "object",
+            "required": [
+                "checked_in_today",
+                "points",
+                "rules",
+                "transactions",
+                "uid"
+            ],
+            "properties": {
+                "checked_in_today": {
+                    "type": "boolean"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "rules": {
+                    "$ref": "#/definitions/handler.ResponsePointsRules"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PointTransaction"
+                    }
+                },
+                "uid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ResponsePointsRules": {
+            "type": "object",
+            "required": [
+                "checkin",
+                "comment_create",
+                "comment_create_daily_cap",
+                "vote_received"
+            ],
+            "properties": {
+                "checkin": {
+                    "type": "integer"
+                },
+                "comment_create": {
+                    "type": "integer"
+                },
+                "comment_create_daily_cap": {
+                    "type": "integer"
+                },
+                "vote_received": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseSecurityBanList": {
             "type": "object",
             "required": [
@@ -6656,6 +8243,102 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseUIDExchange": {
+            "type": "object",
+            "required": [
+                "available",
+                "current_uid",
+                "is_lucky",
+                "points",
+                "previous_uid",
+                "price",
+                "reason",
+                "tier",
+                "uid"
+            ],
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "current_uid": {
+                    "type": "integer"
+                },
+                "is_lucky": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "description": "Message 是给用户看的说明，例如\"该号码已被占用\"。",
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "previous_uid": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "$ref": "#/definitions/uidlucky.Reason"
+                },
+                "tier": {
+                    "$ref": "#/definitions/uidlucky.Tier"
+                },
+                "uid": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ResponseUIDQuote": {
+            "type": "object",
+            "required": [
+                "available",
+                "current_uid",
+                "is_login",
+                "is_lucky",
+                "points",
+                "price",
+                "reason",
+                "tier",
+                "uid"
+            ],
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "current_uid": {
+                    "description": "调用者当前的 UID，未登录为 0",
+                    "type": "integer"
+                },
+                "is_login": {
+                    "type": "boolean"
+                },
+                "is_lucky": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "description": "Message 是给用户看的说明，例如\"该号码已被占用\"。",
+                    "type": "string"
+                },
+                "points": {
+                    "description": "调用者当前积分，未登录为 0",
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "$ref": "#/definitions/uidlucky.Reason"
+                },
+                "tier": {
+                    "$ref": "#/definitions/uidlucky.Tier"
+                },
+                "uid": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseUpload": {
             "type": "object",
             "required": [
@@ -6718,6 +8401,28 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseUserBadges": {
+            "type": "object",
+            "required": [
+                "badges",
+                "points",
+                "uid"
+            ],
+            "properties": {
+                "badges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.BadgeView"
+                    }
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "uid": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseUserCreate": {
             "type": "object",
             "required": [
@@ -6734,7 +8439,9 @@ const docTemplate = `{
                 "last_ua",
                 "link",
                 "name",
-                "receive_email"
+                "points",
+                "receive_email",
+                "uid"
             ],
             "properties": {
                 "badge_color": {
@@ -6784,8 +8491,16 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "points": {
+                    "description": "Points 只在本人登录查询时填充，匿名查询恒为 0。",
+                    "type": "integer"
+                },
                 "receive_email": {
                     "type": "boolean"
+                },
+                "uid": {
+                    "description": "UID 是面向用户的业务编号（门牌号），可公开，用于展示与分享。",
+                    "type": "integer"
                 }
             }
         },
@@ -6912,7 +8627,9 @@ const docTemplate = `{
                 "last_ua",
                 "link",
                 "name",
-                "receive_email"
+                "points",
+                "receive_email",
+                "uid"
             ],
             "properties": {
                 "badge_color": {
@@ -6962,8 +8679,16 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "points": {
+                    "description": "Points 只在本人登录查询时填充，匿名查询恒为 0。",
+                    "type": "integer"
+                },
                 "receive_email": {
                     "type": "boolean"
+                },
+                "uid": {
+                    "description": "UID 是面向用户的业务编号（门牌号），可公开，用于展示与分享。",
+                    "type": "integer"
                 }
             }
         },
@@ -7321,6 +9046,57 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "uidlucky.Reason": {
+            "type": "string",
+            "enum": [
+                "",
+                "repeated",
+                "sequential",
+                "palindrome",
+                "tail_triple",
+                "tail_double"
+            ],
+            "x-enum-comments": {
+                "ReasonPalindrome": "回文",
+                "ReasonRepeated": "全位相同",
+                "ReasonSequential": "连续递增或递减",
+                "ReasonTailDouble": "尾部两位相同",
+                "ReasonTailTriple": "尾部三位相同"
+            },
+            "x-enum-descriptions": [
+                "",
+                "全位相同",
+                "连续递增或递减",
+                "回文",
+                "尾部三位相同",
+                "尾部两位相同"
+            ],
+            "x-enum-varnames": [
+                "ReasonNone",
+                "ReasonRepeated",
+                "ReasonSequential",
+                "ReasonPalindrome",
+                "ReasonTailTriple",
+                "ReasonTailDouble"
+            ]
+        },
+        "uidlucky.Tier": {
+            "type": "string",
+            "enum": [
+                "",
+                "c",
+                "b",
+                "a",
+                "s"
+            ],
+            "x-enum-varnames": [
+                "TierNone",
+                "TierC",
+                "TierB",
+                "TierA",
+                "TierS"
+            ]
         }
     },
     "securityDefinitions": {

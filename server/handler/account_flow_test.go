@@ -28,9 +28,9 @@ func TestPasswordLoginAndProfile(t *testing.T) {
 	const password = "a-test-password"
 	reader := entity.User{Name: "Reader", Email: "reader@example.org"}
 	require.NoError(t, reader.SetPasswordEncrypt(password))
-	require.NoError(t, app.Dao().DB().Create(&reader).Error)
+	require.NoError(t, app.Dao().CreateUser(&reader))
 	other := entity.User{Name: "Other reader", Email: reader.Email}
-	require.NoError(t, app.Dao().DB().Create(&other).Error)
+	require.NoError(t, app.Dao().CreateUser(&other))
 
 	login := handler.ParamsUserLogin{Email: reader.Email, Password: password}
 	var selection struct {

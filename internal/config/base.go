@@ -200,6 +200,24 @@ func (conf *Config) normalPatch() {
 		}
 	}
 
+	// 成长体系（积分 / 徽章 / UID 靓号）
+	conf.Rewards = conf.Rewards.Normalized()
+	if conf.Rewards.Enabled {
+		// 总开关打开但两个子能力都没写：按"都想用"处理。
+		// 否则用户只写 rewards.enabled: true 会得到一套什么都不做的配置，
+		// 而 bool 字段没有 nil 状态，无法在代码里区分"没写"和"写了 false"。
+		if !conf.Rewards.Badges.Enabled && !conf.Rewards.UID.Enabled {
+			conf.Rewards.Badges.Enabled = true
+			conf.Rewards.UID.Enabled = true
+		}
+		if conf.Rewards.Badges.Enabled {
+			// 徽章库靠管理接口维护，空库时提示一下，避免以为功能坏了
+			if conf.Debug {
+				log.Info("config `rewards.enabled` is true, badge library is managed via the admin API")
+			}
+		}
+	}
+
 	// 图片上传存放路径默认设置
 	if conf.ImgUpload.Path == "" {
 		conf.ImgUpload.Path = "./data/artalk-img/"

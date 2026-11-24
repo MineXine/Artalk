@@ -42,13 +42,21 @@ func (dao *Dao) MigrateModels() {
 		}
 	}
 
+	// users.uid 的老库升级：补齐列并回填历史行。
+	// 索引不在这里建——全新库此时还没有表。
+	dao.migrateUserUID()
+
 	// Migrate the schema
 	if err := dao.DB().AutoMigrate(&entity.Site{}, &entity.Page{}, &entity.User{},
 		&entity.AuthIdentity{}, &entity.UserEmailVerify{},
 		&entity.Comment{}, &entity.Notify{}, &entity.Vote{}, &entity.ModerationLog{}, &entity.AIAssistantLog{},
-		&entity.SecurityEvent{}, &entity.IPBan{}); err != nil {
+		&entity.SecurityEvent{}, &entity.IPBan{},
+		&entity.Badge{}, &entity.UserBadge{}, &entity.PointTransaction{}); err != nil {
 		log.Fatal("[DB Migrator] Failed to migrate schema: ", err)
 	}
+
+	// 走到这里表必定已存在、uid 也已互不相同，唯一约束才能建立。
+	dao.createUserUIDIndex()
 
 	// Delete all foreign key constraints
 	// Leave relationship maintenance to the program and reduce the difficulty of database management.

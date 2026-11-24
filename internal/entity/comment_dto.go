@@ -5,6 +5,7 @@ type CommentDTO struct {
 	Content        string `json:"content"`
 	ContentMarked  string `json:"content_marked"`
 	UserID         uint   `json:"user_id"`
+	UID            uint64 `json:"uid"` // 评论者的业务编号，与 UserDTO.UID 同源
 	IsAIAssistant  bool   `json:"is_ai_assistant,omitempty"`
 	Nick           string `json:"nick"`
 	EmailEncrypted string `json:"email_encrypted"`

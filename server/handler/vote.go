@@ -9,6 +9,7 @@ import (
 	"github.com/artalkjs/artalk/v2/internal/dao"
 	"github.com/artalkjs/artalk/v2/internal/entity"
 	"github.com/artalkjs/artalk/v2/internal/i18n"
+	"github.com/artalkjs/artalk/v2/internal/utils"
 	"github.com/artalkjs/artalk/v2/server/common"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -137,7 +138,7 @@ func VoteCreate(app *core.App, router fiber.Router) {
 			}
 		}
 
-		result, err := updateVote(app.Dao(), createNewVoteParams{
+		result, newUp, err := updateVote(app.Dao(), createNewVoteParams{
 			ip:         ip,
 			ua:         string(c.Request().Header.UserAgent()),
 			userID:     user.ID,
@@ -156,8 +157,29 @@ func VoteCreate(app *core.App, router fiber.Router) {
 			return common.RespError(c, 500, "Failed to update vote")
 		}
 
+		// 只有"新增一条 up 投票"才结算积分。newUp 由事务内判定，
+		// 取消赞、改成 down、重复切换都不会重复计分。
+		if newUp && targetName == "comment" && !comment.IsEmpty() {
+			if rewardsService, err := core.AppService[*core.RewardsService](app); err == nil && rewardsService != nil {
+				voterKey := voteVoterKey(user.ID, ip)
+				go rewardsService.OnVoteReceived(comment.UserID, comment.ID, voterKey)
+			}
+		}
+
 		return common.RespData(c, result)
 	}))
+}
+
+// voteVoterKey 生成"谁投了这一票"的去重键。
+//
+// 优先用登录用户 ID；匿名投票退化为 IP 的哈希，避免在积分流水里
+// 明文落 IP。同一个投票者对同一条评论只会计一次分，这是防止
+// "取消赞再点赞"刷分的关键。
+func voteVoterKey(userID uint, ip string) string {
+	if userID != 0 {
+		return fmt.Sprintf("u:%d", userID)
+	}
+	return "ip:" + utils.GetMD5Hash(ip)
 }
 
 // VoteChoice is `up` or `down`
@@ -189,11 +211,16 @@ type createNewVoteParams struct {
 	choice     string
 }
 
-func updateVote(d *dao.Dao, opts createNewVoteParams) (ResponseVote, error) {
+// updateVote 更新投票计数。
+//
+// 第二个返回值表示"本次是否新增了一条针对评论的 up 投票"，供积分结算使用：
+// 取消赞、改成 down 都不会让它为 true，因此可以安全地用它作为发分条件。
+func updateVote(d *dao.Dao, opts createNewVoteParams) (ResponseVote, bool, error) {
 	var (
 		result  ResponseVote
 		comment entity.Comment
 		page    entity.Page
+		newUp   bool
 	)
 
 	err := d.DB().Transaction(func(tx *gorm.DB) error {
@@ -241,6 +268,11 @@ func updateVote(d *dao.Dao, opts createNewVoteParams) (ResponseVote, error) {
 			if err := tx.Create(&vote).Error; err != nil {
 				return fmt.Errorf("create vote: %w", err)
 			}
+			// 走到这里说明之前没有 up 投票（否则 selectedChoice 会被置空或改向），
+			// 所以这是一次真正的"新增赞"。
+			if opts.targetName == "comment" && selectedChoice == "up" {
+				newUp = true
+			}
 		}
 
 		var up, down int64
@@ -274,7 +306,7 @@ func updateVote(d *dao.Dao, opts createNewVoteParams) (ResponseVote, error) {
 		return nil
 	})
 	if err != nil {
-		return ResponseVote{}, err
+		return ResponseVote{}, false, err
 	}
 
 	d.CacheAction(func(cache *dao.DaoCache) {
@@ -285,5 +317,5 @@ func updateVote(d *dao.Dao, opts createNewVoteParams) (ResponseVote, error) {
 		}
 	})
 
-	return result, nil
+	return result, newUp, nil
 }

@@ -126,6 +126,24 @@ security:
   event_retention_days: 90
   exclude_paths: []
 
+rewards:
+  enabled: false
+  points:
+    comment_create: 5
+    comment_create_daily_cap: 30
+    vote_received: 1
+    checkin: 10
+  badges:
+    enabled: false
+    max_equipped: 1
+  uid:
+    enabled: false
+    price:
+      s: 8000
+      a: 3000
+      b: 1200
+      c: 400
+
 # Console appearance
 console:
   name: ""

@@ -348,6 +348,20 @@ func commentCreatedJobs(app *core.App, comment entity.Comment, parentComment ent
 		}
 	}
 
+	// Rewards: 待审评论不计积分，所以放在审核之后重新读一次状态，
+	// 而不是复用进入函数时的 comment 快照。
+	//
+	// 这里必须判空取 dao：本函数跑在 goroutine 里，进程退出或测试清理会先
+	// ResetBootstrapState 把 app.dao 置 nil，此时再解引用就会 panic。取不到
+	// dao 说明应用正在关闭，跳过结算比崩溃更合适。
+	if rewardsService, err := core.AppService[*core.RewardsService](app); err == nil && rewardsService != nil {
+		if dao := app.Dao(); dao != nil {
+			if latest := dao.FindComment(comment.ID); !latest.IsEmpty() && !latest.IsPending {
+				rewardsService.OnCommentCreated(latest.UserID, latest.ID)
+			}
+		}
+	}
+
 	// Send Notify (email, webhook, telegram, etc.)
 	if notifyService, err := core.AppService[*core.NotifyService](app); err == nil {
 		if err := notifyService.Push(&comment, &parentComment); err != nil {
