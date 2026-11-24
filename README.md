@@ -177,7 +177,7 @@ Integrate Artalk Client into your webpage:
 ```ts
 Artalk.init({
   el:      '#Comments',
-  site:    'Artalk Blog',
+  site:    'Artalk',
   server:  'https://artalk.example.com',
   pageKey: '/2018/10/02/hello-world.html'
 })
