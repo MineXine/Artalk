@@ -144,6 +144,12 @@ export function UsersPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate text-[13px] font-medium">{user.name}</span>
+                    <span
+                      className="shrink-0 font-mono text-[11px] text-muted"
+                      title={t('uid')}
+                    >
+                      #{user.uid ?? '—'}
+                    </span>
                     {user.badge_name ? (
                       <Chip
                         size="sm"
@@ -178,12 +184,13 @@ export function UsersPage() {
               <span className="hidden min-w-0 truncate text-[12px] text-muted md:block">
                 {user.email}
               </span>
-              <span
-                className="mr-1 text-[11px] tabular-nums text-muted md:mr-0 md:block md:text-right"
-                title={t('comments')}
-              >
-                {formatNumber(user.comment_count)}
-              </span>
+              <div className="mr-1 flex items-baseline justify-end gap-1 text-[11px] tabular-nums text-muted md:mr-0 md:flex-col md:items-end md:gap-0">
+                <span title={t('comments')}>{formatNumber(user.comment_count)}</span>
+                {/* 积分只在管理员列表里返回，用 p 后缀保持这一列窄而可读 */}
+                <span className="text-[10px] opacity-70" title={t('points')}>
+                  {formatNumber(user.points ?? 0)}p
+                </span>
+              </div>
               <div className="flex shrink-0 items-center justify-end gap-0.5">
                 <Button
                   size="sm"

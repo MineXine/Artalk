@@ -22,6 +22,7 @@ const DashboardPage = lazyRouteComponent(() => import('@/pages/dashboard'), 'Das
 const ModerationPage = lazyRouteComponent(() => import('@/pages/moderation'), 'ModerationPage')
 const PagesPage = lazyRouteComponent(() => import('@/pages/pages'), 'PagesPage')
 const UsersPage = lazyRouteComponent(() => import('@/pages/users'), 'UsersPage')
+const BadgesPage = lazyRouteComponent(() => import('@/pages/badges'), 'BadgesPage')
 const SitesPage = lazyRouteComponent(() => import('@/pages/sites'), 'SitesPage')
 const TransferPage = lazyRouteComponent(() => import('@/pages/transfer'), 'TransferPage')
 const SettingsPage = lazyRouteComponent(() => import('@/pages/settings'), 'SettingsPage')
@@ -145,6 +146,12 @@ const routeTree = rootRoute.addChildren([
       path: '/sites',
       beforeLoad: requireAdmin,
       component: SitesPage,
+    }),
+    createRoute({
+      getParentRoute: () => shellRoute,
+      path: '/badges',
+      beforeLoad: requireAdmin,
+      component: BadgesPage,
     }),
     createRoute({
       getParentRoute: () => shellRoute,

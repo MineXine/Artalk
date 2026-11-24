@@ -41,6 +41,10 @@ export function AccountPage() {
   const [emailCode, setEmailCode] = useState('')
   const [hasPassword, setHasPassword] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
+  // 业务编号与积分余额：只在自己这一页展示，别处（评论列表、用户列表）
+  // 拿到的都是公开字段。
+  const [accountUid, setAccountUid] = useState(0)
+  const [accountPoints, setAccountPoints] = useState(0)
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -72,6 +76,8 @@ export function AccountPage() {
     setLink(user.link)
     setInitialEmail(user.email)
     setHasPassword(user.has_password)
+    setAccountUid(user.uid ?? 0)
+    setAccountPoints(user.points ?? 0)
 
     getArtalk().ctx.getUser().update({ name: user.name, email: user.email, link: user.link })
     session.setUser({ name: user.name, email: user.email, link: user.link })
@@ -257,7 +263,26 @@ export function AccountPage() {
           <p className="text-[12.5px] text-danger">{loadError}</p>
         </Section>
       ) : (
-        <div className="space-y-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:items-start md:gap-3 md:space-y-0">
+        <>
+          {/* 身份摘要：门牌号与积分放在最上面，它们是这个账户在站点里的"资产"，
+              改名字改邮箱都不影响它们。 */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl border border-border bg-surface px-3 py-2.5">
+            <span className="text-[12px] text-muted">
+              {t('uid')}
+              <span className="ml-1.5 font-mono text-[13px] font-medium text-foreground">
+                #{accountUid || '—'}
+              </span>
+            </span>
+            <span aria-hidden className="hidden h-3 w-px bg-border md:block" />
+            <span className="text-[12px] text-muted">
+              {t('points')}
+              <span className="ml-1.5 text-[13px] font-medium tabular-nums text-foreground">
+                {accountPoints.toLocaleString()}
+              </span>
+            </span>
+          </div>
+
+          <div className="space-y-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:items-start md:gap-3 md:space-y-0">
           <div className="space-y-3">
             <Section title={t('profileSection')} description={t('emailChangeHint')}>
               <div className="space-y-1.5">
@@ -453,6 +478,7 @@ export function AccountPage() {
             )}
           </Section>
         </div>
+        </>
       )}
 
       {/* Signing out lives here, with the rest of the account actions, so the

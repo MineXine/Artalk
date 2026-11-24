@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowDownUp,
+  Award,
   CircleUserRound,
   FileText,
   Globe2,
@@ -21,6 +22,7 @@ export type PageId =
   | 'moderation'
   | 'pages'
   | 'users'
+  | 'badges'
   | 'sites'
   | 'transfer'
   | 'settings'
@@ -111,6 +113,16 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/sites',
     titleKey: 'navSites',
     icon: Globe2,
+    adminOnly: true,
+    group: 'community',
+  },
+  {
+    // The badge library sits next to users: it is the other half of "who is
+    // who" — users hold badges, and admins define what can be held.
+    id: 'badges',
+    path: '/badges',
+    titleKey: 'navBadges',
+    icon: Award,
     adminOnly: true,
     group: 'community',
   },

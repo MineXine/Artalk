@@ -3,6 +3,10 @@ import { session } from './session'
 
 export interface AccountProfile {
   id: number
+  /** 业务编号（门牌号），从 10001 起分配 */
+  uid?: number
+  /** 积分余额，仅本人可见 */
+  points?: number
   name: string
   email: string
   link: string

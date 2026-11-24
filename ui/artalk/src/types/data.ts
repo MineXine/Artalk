@@ -136,6 +136,16 @@ export interface UserData {
   /** 用户 ID */
   id: number
 
+  /**
+   * 业务编号（门牌号），从 10001 起分配，可用积分兑换靓号。
+   *
+   * 与主键 `id` 刻意分开：兑换靓号只改这个值，不影响评论、通知等引用。
+   */
+  uid?: number
+
+  /** 积分余额。只有查询本人时才会返回，其他场景为 0 或省略。 */
+  points?: number
+
   /** 用户名 */
   name: string
 
