@@ -14,7 +14,7 @@ on:
         type: string
 
 env:
-  DOCKER_IMG: willowgod/artalk
+  DOCKER_IMG: 612901aauu/artalk
 
 jobs:
   build_publish:
