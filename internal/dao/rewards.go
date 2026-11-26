@@ -67,6 +67,67 @@ func (dao *Dao) DeleteBadge(id uint) error {
 	})
 }
 
+// ===============
+//  BadgeCategory
+// ===============
+
+// FindAllBadgeCategories 按展示顺序返回分类。
+func (dao *Dao) FindAllBadgeCategories(includeDisabled bool) []entity.BadgeCategory {
+	cats := []entity.BadgeCategory{}
+	q := dao.DB().Model(&entity.BadgeCategory{})
+	if !includeDisabled {
+		q = q.Where("enabled = ?", true)
+	}
+	_ = q.Order("sort_order ASC").Order("id ASC").Find(&cats).Error
+	return cats
+}
+
+func (dao *Dao) FindBadgeCategoryByID(id uint) entity.BadgeCategory {
+	var cat entity.BadgeCategory
+	if id == 0 {
+		return cat
+	}
+	_ = dao.DB().Where("id = ?", id).First(&cat).Error
+	return cat
+}
+
+func (dao *Dao) FindBadgeCategoryByKey(key string) entity.BadgeCategory {
+	var cat entity.BadgeCategory
+	if key == "" {
+		return cat
+	}
+	_ = dao.DB().Where("key = ?", key).First(&cat).Error
+	return cat
+}
+
+func (dao *Dao) CreateBadgeCategory(cat *entity.BadgeCategory) error {
+	return dao.DB().Create(cat).Error
+}
+
+func (dao *Dao) UpdateBadgeCategory(cat *entity.BadgeCategory) error {
+	return dao.DB().Save(cat).Error
+}
+
+// DeleteBadgeCategory 删除分类，把该分类下的徽章退回"未分类"。
+//
+// 不级联删除徽章：徽章是用户已经拿到手的资产，管理员整理分组不该让它们消失。
+func (dao *Dao) DeleteBadgeCategory(id uint) error {
+	return dao.DB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&entity.Badge{}).Where("category_id = ?", id).
+			Update("category_id", 0).Error; err != nil {
+			return err
+		}
+		return tx.Unscoped().Delete(&entity.BadgeCategory{}, id).Error
+	})
+}
+
+// CountBadgesInCategory 统计分类下的徽章数，供删除前提示。
+func (dao *Dao) CountBadgesInCategory(id uint) int64 {
+	var n int64
+	_ = dao.DB().Model(&entity.Badge{}).Where("category_id = ?", id).Count(&n).Error
+	return n
+}
+
 // FindUserBadges 返回用户持有的徽章，附带徽章定义。
 func (dao *Dao) FindUserBadges(userID uint) []entity.UserBadge {
 	badges := []entity.UserBadge{}

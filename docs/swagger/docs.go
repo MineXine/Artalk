@@ -384,6 +384,237 @@ const docTemplate = `{
                 }
             }
         },
+        "/badge-categories": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "List badge categories",
+                "operationId": "AdminListBadgeCategories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseBadgeCategories"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Create a badge category",
+                "operationId": "AdminCreateBadgeCategory",
+                "parameters": [
+                    {
+                        "description": "The category",
+                        "name": "category",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsBadgeCategoryUpsert"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.BadgeCategory"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badge-categories/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Update a badge category",
+                "operationId": "AdminUpdateBadgeCategory",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The category",
+                        "name": "category",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ParamsBadgeCategoryUpsert"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.BadgeCategory"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Badges in the category are moved to \"uncategorised\" instead of being deleted",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Delete a badge category",
+                "operationId": "AdminDeleteBadgeCategory",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseBadgeCategoryDelete"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/badges": {
             "get": {
                 "security": [
@@ -562,6 +793,68 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/badges/seed-defaults": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Idempotent — keys that already exist are left untouched",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Rewards"
+                ],
+                "summary": "Import the built-in badge set",
+                "operationId": "AdminSeedDefaultBadges",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ResponseBadgeSeed"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handler.Map"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "allOf": [
                                 {
@@ -5766,6 +6059,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "achieved",
+                "category_id",
                 "color",
                 "condition_kind",
                 "condition_value",
@@ -5789,6 +6083,10 @@ const docTemplate = `{
                 "achieved": {
                     "description": "Achieved 表示条件型徽章当前是否已达标（用于展示进度条）。",
                     "type": "boolean"
+                },
+                "category_id": {
+                    "description": "CategoryID 指向徽章分类，0 表示未分类。删除分类时徽章会退回 0 而不是\n一起消失——徽章属于用户，不该因为整理目录而丢掉。",
+                    "type": "integer"
                 },
                 "color": {
                     "description": "Color 允许 hex（#ff8800）或语义名（orange），前端原样输出到 CSS 变量。",
@@ -5939,6 +6237,7 @@ const docTemplate = `{
         "entity.Badge": {
             "type": "object",
             "required": [
+                "category_id",
                 "color",
                 "condition_kind",
                 "condition_value",
@@ -5955,6 +6254,10 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "category_id": {
+                    "description": "CategoryID 指向徽章分类，0 表示未分类。删除分类时徽章会退回 0 而不是\n一起消失——徽章属于用户，不该因为整理目录而丢掉。",
+                    "type": "integer"
+                },
                 "color": {
                     "description": "Color 允许 hex（#ff8800）或语义名（orange），前端原样输出到 CSS 变量。",
                     "type": "string"
@@ -5996,6 +6299,42 @@ const docTemplate = `{
                 "price": {
                     "description": "Price 是兑换所需积分，0 表示不可用积分购买。",
                     "type": "integer"
+                },
+                "sort_order": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.BadgeCategory": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "enabled",
+                "id",
+                "key",
+                "name",
+                "sort_order",
+                "updated_at"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "description": "稳定标识，供导入导出引用",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "sort_order": {
                     "type": "integer"
@@ -6566,6 +6905,29 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ParamsBadgeCategoryUpsert": {
+            "type": "object",
+            "required": [
+                "key",
+                "name"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "description": "Stable identifier, kebab-case",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Display name",
+                    "type": "string"
+                },
+                "sort_order": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ParamsBadgeUpsert": {
             "type": "object",
             "required": [
@@ -6574,6 +6936,10 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "category_id": {
+                    "description": "CategoryID 指向徽章分类，0 表示未分类",
+                    "type": "integer"
+                },
                 "color": {
                     "description": "hex or a CSS color name",
                     "type": "string"
@@ -7348,7 +7714,8 @@ const docTemplate = `{
         "handler.ResponseBadgeAdminList": {
             "type": "object",
             "required": [
-                "badges"
+                "badges",
+                "categories"
             ],
             "properties": {
                 "badges": {
@@ -7356,6 +7723,38 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entity.Badge"
                     }
+                },
+                "categories": {
+                    "description": "管理端连停用的分类一起返回，否则\"停用\"就没有入口可以改回来。",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.BadgeCategory"
+                    }
+                }
+            }
+        },
+        "handler.ResponseBadgeCategories": {
+            "type": "object",
+            "required": [
+                "categories"
+            ],
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.BadgeCategory"
+                    }
+                }
+            }
+        },
+        "handler.ResponseBadgeCategoryDelete": {
+            "type": "object",
+            "required": [
+                "moved"
+            ],
+            "properties": {
+                "moved": {
+                    "type": "integer"
                 }
             }
         },
@@ -7370,10 +7769,26 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ResponseBadgeSeed": {
+            "type": "object",
+            "required": [
+                "badges",
+                "categories"
+            ],
+            "properties": {
+                "badges": {
+                    "type": "integer"
+                },
+                "categories": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.ResponseBadges": {
             "type": "object",
             "required": [
                 "badges",
+                "categories",
                 "is_login",
                 "points",
                 "uid"
@@ -7383,6 +7798,13 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/core.BadgeView"
+                    }
+                },
+                "categories": {
+                    "description": "Categories 与 Badges 一起下发，前端不必为分组再发一次请求。",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.BadgeCategory"
                     }
                 },
                 "is_login": {
@@ -8405,6 +8827,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "badges",
+                "categories",
                 "points",
                 "uid"
             ],
@@ -8413,6 +8836,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/core.BadgeView"
+                    }
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.BadgeCategory"
                     }
                 },
                 "points": {

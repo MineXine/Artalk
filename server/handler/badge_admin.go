@@ -22,6 +22,8 @@ type ParamsBadgeUpsert struct {
 	Color       string `json:"color" validate:"optional"` // hex or a CSS color name
 	Icon        string `json:"icon" validate:"optional"`  // icon URL or a single emoji
 	Description string `json:"description" validate:"optional"`
+	// CategoryID 指向徽章分类，0 表示未分类
+	CategoryID uint `json:"category_id" validate:"optional"`
 	// GrantType 决定徽章在列表里的归类：condition / exchange / manual
 	GrantType string `json:"grant_type" validate:"required"`
 	// ConditionKind 仅对 condition 类有意义
@@ -83,6 +85,20 @@ func (p *ParamsBadgeUpsert) normalize() string {
 	return ""
 }
 
+// validateBadgeCategory 确认目标分类存在。
+//
+// 挂在不存在的分类上的徽章不会报错，但会从任何分组里消失——徽章墙按分类
+// 分组渲染，孤儿 ID 谁都不认领。所以在写入前拦住。
+func validateBadgeCategory(app *core.App, categoryID uint) string {
+	if categoryID == 0 {
+		return ""
+	}
+	if app.Dao().FindBadgeCategoryByID(categoryID).IsEmpty() {
+		return i18n.T("{{name}} not found", Map{"name": i18n.T("Category")})
+	}
+	return ""
+}
+
 // toEntity 把入参落到实体上。existing 为空表示新建。
 func (p *ParamsBadgeUpsert) toEntity(existing entity.Badge) entity.Badge {
 	badge := existing
@@ -91,6 +107,7 @@ func (p *ParamsBadgeUpsert) toEntity(existing entity.Badge) entity.Badge {
 	badge.Color = p.Color
 	badge.Icon = p.Icon
 	badge.Description = p.Description
+	badge.CategoryID = p.CategoryID
 	badge.GrantType = entity.BadgeGrantType(p.GrantType)
 	badge.ConditionKind = entity.BadgeConditionKind(p.ConditionKind)
 	badge.ConditionValue = p.ConditionValue
@@ -109,6 +126,8 @@ func (p *ParamsBadgeUpsert) toEntity(existing entity.Badge) entity.Badge {
 // ResponseBadgeAdminList 是管理端的徽章列表。
 type ResponseBadgeAdminList struct {
 	Badges []entity.Badge `json:"badges"`
+	// 管理端连停用的分类一起返回，否则"停用"就没有入口可以改回来。
+	Categories []entity.BadgeCategory `json:"categories"`
 }
 
 // @Id           AdminListBadges
@@ -123,7 +142,8 @@ func BadgeAdminList(app *core.App, router fiber.Router) {
 	// 注册在 BadgeAdminCreate 之前也不冲突（方法不同），但放在一起更好读
 	router.Get("/badges/all", common.AdminGuard(app, func(c *fiber.Ctx) error {
 		return common.RespData(c, ResponseBadgeAdminList{
-			Badges: app.Dao().FindAllBadges(true),
+			Badges:     app.Dao().FindAllBadges(true),
+			Categories: app.Dao().FindAllBadgeCategories(true),
 		})
 	}))
 }
@@ -146,6 +166,9 @@ func BadgeAdminCreate(app *core.App, router fiber.Router) {
 			return resp
 		}
 		if msg := p.normalize(); msg != "" {
+			return common.RespError(c, 400, msg)
+		}
+		if msg := validateBadgeCategory(app, p.CategoryID); msg != "" {
 			return common.RespError(c, 400, msg)
 		}
 		if !app.Dao().FindBadgeByKey(p.Key).IsEmpty() {
@@ -190,6 +213,9 @@ func BadgeAdminUpdate(app *core.App, router fiber.Router) {
 			return resp
 		}
 		if msg := p.normalize(); msg != "" {
+			return common.RespError(c, 400, msg)
+		}
+		if msg := validateBadgeCategory(app, p.CategoryID); msg != "" {
 			return common.RespError(c, 400, msg)
 		}
 
@@ -293,9 +319,10 @@ func UserPointsAdjust(app *core.App, router fiber.Router) {
 
 // ResponseUserBadges 是某用户的徽章持有情况。
 type ResponseUserBadges struct {
-	Badges []core.BadgeView `json:"badges"`
-	Points int64            `json:"points"`
-	UID    uint64           `json:"uid"`
+	Badges     []core.BadgeView       `json:"badges"`
+	Categories []entity.BadgeCategory `json:"categories"`
+	Points     int64                  `json:"points"`
+	UID        uint64                 `json:"uid"`
 }
 
 // @Id           AdminListUserBadges
@@ -324,10 +351,13 @@ func UserBadgesList(app *core.App, router fiber.Router) {
 			return common.RespError(c, 500, i18n.T("Rewards service is unavailable"))
 		}
 
+		wall := svc.ListBadgesForUser(user.ID)
+
 		return common.RespData(c, ResponseUserBadges{
-			Badges: svc.ListBadgesForUser(user.ID),
-			Points: user.Points,
-			UID:    user.UID,
+			Badges:     wall.Badges,
+			Categories: wall.Categories,
+			Points:     user.Points,
+			UID:        user.UID,
 		})
 	}))
 }
@@ -394,5 +424,37 @@ func UserBadgeRevoke(app *core.App, router fiber.Router) {
 			return respRewardsError(c, err)
 		}
 		return common.RespSuccess(c)
+	}))
+}
+
+// ResponseBadgeSeed 报告这次导入了多少内置数据。
+type ResponseBadgeSeed struct {
+	Categories int `json:"categories"`
+	Badges     int `json:"badges"`
+}
+
+// @Id           AdminSeedDefaultBadges
+// @Summary      Import the built-in badge set
+// @Description  Idempotent — keys that already exist are left untouched
+// @Tags         Rewards
+// @Security     ApiKeyAuth
+// @Produce      json
+// @Success      200  {object}  ResponseBadgeSeed
+// @Failure      403  {object}  Map{msg=string}
+// @Failure      500  {object}  Map{msg=string}
+// @Router       /badges/seed-defaults  [post]
+func BadgeSeedDefaults(app *core.App, router fiber.Router) {
+	router.Post("/badges/seed-defaults", common.AdminGuard(app, func(c *fiber.Ctx) error {
+		svc, svcErr := core.AppService[*core.RewardsService](app)
+		if svcErr != nil || svc == nil {
+			return common.RespError(c, 500, i18n.T("Rewards service is unavailable"))
+		}
+
+		categories, badges, err := svc.SeedDefaultBadges()
+		if err != nil {
+			return common.RespError(c, 500, i18n.T("Operation failed"))
+		}
+
+		return common.RespData(c, ResponseBadgeSeed{Categories: categories, Badges: badges})
 	}))
 }

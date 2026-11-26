@@ -288,3 +288,92 @@ func TestRewardsUIDExchange(t *testing.T) {
 	require.False(t, app.Dao().IsUIDTaken(before), "the previous uid should have been released")
 	require.True(t, app.Dao().FindUserByUID(before).IsEmpty())
 }
+
+// TestRewardsSeedDefaults 校验内置徽章成套导入且幂等。
+func TestRewardsSeedDefaults(t *testing.T) {
+	app, router := NewApiTestApp()
+	t.Cleanup(func() { require.NoError(t, app.Cleanup()) })
+
+	handler.BadgeSeedDefaults(app.App, router)
+	handler.BadgeList(app.App, router)
+	enableRewards(t, app)
+
+	admin, err := common.LoginGetUserToken(app.Dao().FindUserByID(1000), app.Conf().AppKey, 60)
+	require.NoError(t, err)
+
+	var first handler.ResponseBadgeSeed
+	require.NoError(t, json.Unmarshal(
+		flowRequest(t, router, http.MethodPost, "/badges/seed-defaults", nil, admin, http.StatusOK), &first))
+	require.Equal(t, 3, first.Categories)
+	require.Equal(t, 10, first.Badges)
+
+	// 再导一次不会重复插入
+	var second handler.ResponseBadgeSeed
+	require.NoError(t, json.Unmarshal(
+		flowRequest(t, router, http.MethodPost, "/badges/seed-defaults", nil, admin, http.StatusOK), &second))
+	require.Zero(t, second.Categories)
+	require.Zero(t, second.Badges)
+
+	// 匿名访客也能看到整套徽章，且每枚都有归属分类
+	var wall handler.ResponseBadges
+	require.NoError(t, json.Unmarshal(
+		flowRequest(t, router, http.MethodGet, "/badges", nil, "", http.StatusOK), &wall))
+	require.Len(t, wall.Categories, 3)
+	require.Len(t, wall.Badges, 10)
+	for _, badge := range wall.Badges {
+		require.NotZero(t, badge.CategoryID, "badge %q should belong to a category", badge.Key)
+	}
+
+	// 分类按 sort_order 排列
+	require.Equal(t, "growth", wall.Categories[0].Key)
+	require.Equal(t, "popularity", wall.Categories[1].Key)
+	require.Equal(t, "special", wall.Categories[2].Key)
+}
+
+// TestRewardsBadgeCategories 覆盖分类 CRUD，以及删分类时徽章的归属处理。
+func TestRewardsBadgeCategories(t *testing.T) {
+	app, router := NewApiTestApp()
+	t.Cleanup(func() { require.NoError(t, app.Cleanup()) })
+
+	handler.BadgeCategoryCreate(app.App, router)
+	handler.BadgeCategoryUpdate(app.App, router)
+	handler.BadgeCategoryDelete(app.App, router)
+	handler.BadgeAdminCreate(app.App, router)
+	enableRewards(t, app)
+
+	admin, err := common.LoginGetUserToken(app.Dao().FindUserByID(1000), app.Conf().AppKey, 60)
+	require.NoError(t, err)
+
+	payload := handler.ParamsBadgeCategoryUpsert{Key: "events", Name: "活动徽章", SortOrder: 5}
+	var created entity.BadgeCategory
+	require.NoError(t, json.Unmarshal(
+		flowRequest(t, router, http.MethodPost, "/badge-categories", payload, admin, http.StatusOK), &created))
+	require.NotZero(t, created.ID)
+	require.True(t, created.Enabled)
+
+	// key 唯一
+	flowRequest(t, router, http.MethodPost, "/badge-categories", payload, admin, http.StatusBadRequest)
+
+	// 徽章挂到分类下
+	var badge entity.Badge
+	require.NoError(t, json.Unmarshal(flowRequest(t, router, http.MethodPost, "/badges",
+		handler.ParamsBadgeUpsert{
+			Key: "event-2026", Name: "2026 活动", GrantType: "manual", CategoryID: created.ID,
+		}, admin, http.StatusOK), &badge))
+	require.Equal(t, created.ID, badge.CategoryID)
+
+	// 指向不存在的分类要被拒绝，否则徽章会从任何分组里消失
+	flowRequest(t, router, http.MethodPost, "/badges", handler.ParamsBadgeUpsert{
+		Key: "ghost-badge", Name: "幽灵", GrantType: "manual", CategoryID: 99999,
+	}, admin, http.StatusBadRequest)
+
+	// 删分类：徽章退回未分类，本身不丢
+	var removed handler.ResponseBadgeCategoryDelete
+	require.NoError(t, json.Unmarshal(flowRequest(t, router, http.MethodDelete,
+		fmt.Sprintf("/badge-categories/%d", created.ID), nil, admin, http.StatusOK), &removed))
+	require.Equal(t, int64(1), removed.Moved)
+
+	stored := app.Dao().FindBadgeByKey("event-2026")
+	require.False(t, stored.IsEmpty(), "the badge itself must survive its category")
+	require.Zero(t, stored.CategoryID)
+}

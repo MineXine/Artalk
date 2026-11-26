@@ -70,6 +70,11 @@ definitions:
       achieved:
         description: Achieved 表示条件型徽章当前是否已达标（用于展示进度条）。
         type: boolean
+      category_id:
+        description: |-
+          CategoryID 指向徽章分类，0 表示未分类。删除分类时徽章会退回 0 而不是
+          一起消失——徽章属于用户，不该因为整理目录而丢掉。
+        type: integer
       color:
         description: Color 允许 hex（#ff8800）或语义名（orange），前端原样输出到 CSS 变量。
         type: string
@@ -116,6 +121,7 @@ definitions:
         type: string
     required:
     - achieved
+    - category_id
     - color
     - condition_kind
     - condition_value
@@ -201,6 +207,11 @@ definitions:
     type: object
   entity.Badge:
     properties:
+      category_id:
+        description: |-
+          CategoryID 指向徽章分类，0 表示未分类。删除分类时徽章会退回 0 而不是
+          一起消失——徽章属于用户，不该因为整理目录而丢掉。
+        type: integer
       color:
         description: Color 允许 hex（#ff8800）或语义名（orange），前端原样输出到 CSS 变量。
         type: string
@@ -236,6 +247,7 @@ definitions:
       updated_at:
         type: string
     required:
+    - category_id
     - color
     - condition_kind
     - condition_value
@@ -248,6 +260,32 @@ definitions:
     - key
     - name
     - price
+    - sort_order
+    - updated_at
+    type: object
+  entity.BadgeCategory:
+    properties:
+      created_at:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      key:
+        description: 稳定标识，供导入导出引用
+        type: string
+      name:
+        type: string
+      sort_order:
+        type: integer
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - enabled
+    - id
+    - key
+    - name
     - sort_order
     - updated_at
     type: object
@@ -662,8 +700,27 @@ definitions:
     required:
     - token
     type: object
+  handler.ParamsBadgeCategoryUpsert:
+    properties:
+      enabled:
+        type: boolean
+      key:
+        description: Stable identifier, kebab-case
+        type: string
+      name:
+        description: Display name
+        type: string
+      sort_order:
+        type: integer
+    required:
+    - key
+    - name
+    type: object
   handler.ParamsBadgeUpsert:
     properties:
+      category_id:
+        description: CategoryID 指向徽章分类，0 表示未分类
+        type: integer
       color:
         description: hex or a CSS color name
         type: string
@@ -1215,8 +1272,30 @@ definitions:
         items:
           $ref: '#/definitions/entity.Badge'
         type: array
+      categories:
+        description: 管理端连停用的分类一起返回，否则"停用"就没有入口可以改回来。
+        items:
+          $ref: '#/definitions/entity.BadgeCategory'
+        type: array
     required:
     - badges
+    - categories
+    type: object
+  handler.ResponseBadgeCategories:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/entity.BadgeCategory'
+        type: array
+    required:
+    - categories
+    type: object
+  handler.ResponseBadgeCategoryDelete:
+    properties:
+      moved:
+        type: integer
+    required:
+    - moved
     type: object
   handler.ResponseBadgeMutation:
     properties:
@@ -1225,11 +1304,26 @@ definitions:
     required:
     - points
     type: object
+  handler.ResponseBadgeSeed:
+    properties:
+      badges:
+        type: integer
+      categories:
+        type: integer
+    required:
+    - badges
+    - categories
+    type: object
   handler.ResponseBadges:
     properties:
       badges:
         items:
           $ref: '#/definitions/core.BadgeView'
+        type: array
+      categories:
+        description: Categories 与 Badges 一起下发，前端不必为分组再发一次请求。
+        items:
+          $ref: '#/definitions/entity.BadgeCategory'
         type: array
       is_login:
         description: |-
@@ -1242,6 +1336,7 @@ definitions:
         type: integer
     required:
     - badges
+    - categories
     - is_login
     - points
     - uid
@@ -1959,12 +2054,17 @@ definitions:
         items:
           $ref: '#/definitions/core.BadgeView'
         type: array
+      categories:
+        items:
+          $ref: '#/definitions/entity.BadgeCategory'
+        type: array
       points:
         type: integer
       uid:
         type: integer
     required:
     - badges
+    - categories
     - points
     - uid
     type: object
@@ -2677,6 +2777,140 @@ paths:
       summary: Apply data merge
       tags:
       - Auth
+  /badge-categories:
+    get:
+      operationId: AdminListBadgeCategories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseBadgeCategories'
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: List badge categories
+      tags:
+      - Rewards
+    post:
+      consumes:
+      - application/json
+      operationId: AdminCreateBadgeCategory
+      parameters:
+      - description: The category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ParamsBadgeCategoryUpsert'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.BadgeCategory'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create a badge category
+      tags:
+      - Rewards
+  /badge-categories/{id}:
+    delete:
+      description: Badges in the category are moved to "uncategorised" instead of
+        being deleted
+      operationId: AdminDeleteBadgeCategory
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseBadgeCategoryDelete'
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a badge category
+      tags:
+      - Rewards
+    put:
+      consumes:
+      - application/json
+      operationId: AdminUpdateBadgeCategory
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: The category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ParamsBadgeCategoryUpsert'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.BadgeCategory'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update a badge category
+      tags:
+      - Rewards
   /badges:
     get:
       description: Return the badge library with the caller's ownership and progress
@@ -2960,6 +3194,40 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Take off the current badge
+      tags:
+      - Rewards
+  /badges/seed-defaults:
+    post:
+      description: Idempotent — keys that already exist are left untouched
+      operationId: AdminSeedDefaultBadges
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ResponseBadgeSeed'
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Map'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Import the built-in badge set
       tags:
       - Rewards
   /cache/flush:

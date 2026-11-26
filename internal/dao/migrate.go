@@ -51,7 +51,7 @@ func (dao *Dao) MigrateModels() {
 		&entity.AuthIdentity{}, &entity.UserEmailVerify{},
 		&entity.Comment{}, &entity.Notify{}, &entity.Vote{}, &entity.ModerationLog{}, &entity.AIAssistantLog{},
 		&entity.SecurityEvent{}, &entity.IPBan{},
-		&entity.Badge{}, &entity.UserBadge{}, &entity.PointTransaction{}); err != nil {
+		&entity.Badge{}, &entity.BadgeCategory{}, &entity.UserBadge{}, &entity.PointTransaction{}); err != nil {
 		log.Fatal("[DB Migrator] Failed to migrate schema: ", err)
 	}
 

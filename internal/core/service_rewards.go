@@ -364,12 +364,23 @@ type BadgeView struct {
 }
 
 // ListBadgesForUser 返回徽章库并标注该用户的持有情况。
-func (s *RewardsService) ListBadgesForUser(userID uint) []BadgeView {
-	badges := s.app.Dao().FindAllBadges(false)
+// BadgeWall 是徽章墙的一屏数据。
+//
+// 分类和徽章一起返回，前端不必再发一次请求去拼分组；未分类的徽章
+// (CategoryID == 0) 由前端归到"未分类"分组里。
+type BadgeWall struct {
+	Categories []entity.BadgeCategory `json:"categories"`
+	Badges     []BadgeView            `json:"badges"`
+}
+
+func (s *RewardsService) ListBadgesForUser(userID uint) BadgeWall {
+	d := s.app.Dao()
+	badges := d.FindAllBadges(false)
+	categories := d.FindAllBadgeCategories(false)
 
 	ownedByID := map[uint]entity.UserBadge{}
 	if userID != 0 {
-		for _, ub := range s.app.Dao().FindUserBadges(userID) {
+		for _, ub := range d.FindUserBadges(userID) {
 			ownedByID[ub.BadgeID] = ub
 		}
 	}
@@ -395,7 +406,7 @@ func (s *RewardsService) ListBadgesForUser(userID uint) []BadgeView {
 		views = append(views, view)
 	}
 
-	return views
+	return BadgeWall{Categories: categories, Badges: views}
 }
 
 // conditionProgress 取出条件对应的当前值，让前端能画进度。

@@ -49,6 +49,25 @@ func (k BadgeConditionKind) Valid() bool {
 	return false
 }
 
+// BadgeCategory 是徽章墙上的分组。
+//
+// 分类只影响展示顺序和分组方式，不参与发放逻辑：把一枚徽章从一个分类挪到
+// 另一个，不会影响谁拥有它。
+type BadgeCategory struct {
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	Key       string `gorm:"uniqueIndex;size:64" json:"key"` // 稳定标识，供导入导出引用
+	Name      string `gorm:"size:64" json:"name"`
+	SortOrder int    `gorm:"not null;default:0" json:"sort_order"`
+	Enabled   bool   `gorm:"not null;default:true" json:"enabled"`
+}
+
+func (c BadgeCategory) IsEmpty() bool {
+	return c.ID == 0
+}
+
 // Badge 是徽章定义（徽章库），与"谁拥有它"分开存放在 UserBadge。
 //
 // 刻意不用 gorm.Model：徽章是配置类数据，采用硬删除（软删除会让 Key 的
@@ -66,6 +85,10 @@ type Badge struct {
 	Icon  string `gorm:"size:512" json:"icon"` // 图标 URL 或单个 emoji
 	// Description 说明这枚徽章怎么来的，会展示在徽章墙上。
 	Description string `gorm:"size:500" json:"description"`
+
+	// CategoryID 指向徽章分类，0 表示未分类。删除分类时徽章会退回 0 而不是
+	// 一起消失——徽章属于用户，不该因为整理目录而丢掉。
+	CategoryID uint `gorm:"index;not null;default:0" json:"category_id"`
 
 	GrantType BadgeGrantType `gorm:"size:32;index" json:"grant_type"`
 

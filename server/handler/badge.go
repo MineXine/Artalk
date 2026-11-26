@@ -14,6 +14,8 @@ import (
 // ResponseBadges 是徽章墙的数据。
 type ResponseBadges struct {
 	Badges []core.BadgeView `json:"badges"`
+	// Categories 与 Badges 一起下发，前端不必为分组再发一次请求。
+	Categories []entity.BadgeCategory `json:"categories"`
 	// IsLogin 为 false 时 Badges 里的 owned / equipped 一律为 false，
 	// 但徽章库本身仍然可见，未注册访客也能看到有哪些徽章可以拿。
 	IsLogin bool   `json:"is_login"`
@@ -45,11 +47,14 @@ func BadgeList(app *core.App, router fiber.Router) {
 			userID = user.ID
 		}
 
+		wall := svc.ListBadgesForUser(userID)
+
 		return common.RespData(c, ResponseBadges{
-			Badges:  svc.ListBadgesForUser(userID),
-			IsLogin: isLogin,
-			Points:  app.Dao().UserPoints(userID),
-			UID:     user.UID,
+			Badges:     wall.Badges,
+			Categories: wall.Categories,
+			IsLogin:    isLogin,
+			Points:     app.Dao().UserPoints(userID),
+			UID:        user.UID,
 		})
 	})
 }
