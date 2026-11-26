@@ -4,6 +4,7 @@ import YAML from 'yaml'
 import { describe, expect, it } from 'vitest'
 import settings from './settings'
 import type { OptionNode } from './settings-option'
+import { buildRootGroups } from './settings-sections'
 
 /**
  * 系统设置页是「模板驱动」的：它把 conf/artalk.example.<locale>.yml 解析成一棵
@@ -71,6 +72,39 @@ describe('rewards config in the settings page', () => {
     expect(price?.type).toBe('object')
     expect(price?.items?.map((item) => item.name)).toEqual(['s', 'a', 'b', 'c'])
     expect(price?.items?.[0].title).toContain('全位相同')
+  })
+})
+
+describe('the settings page index', () => {
+  const groups = buildRootGroups(loadTree('artalk.example.zh-CN.yml'))
+  const names = groups.map((group) => group.name)
+
+  it('lists the rewards section in the left-hand index', () => {
+    // 这一条是"配置项写了却在界面上找不到"的守门员：根节点如果没有子节点，
+    // 会被压平进「配置文件」；如果落在 HIDDEN_ROOT_NODES 里，会整个消失。
+    expect(names).toContain('rewards')
+  })
+
+  it('puts it where the template declares it', () => {
+    const index = names.indexOf('rewards')
+    expect(index).toBeGreaterThan(0)
+    // 模板顺序是 security → rewards → console → img_upload，前两个有独立页面
+    // 被隐藏，所以 rewards 后面紧跟的就是图片上传。
+    expect(names[index + 1]).toBe('img_upload')
+  })
+
+  it('keeps the sections that have their own pages out of the index', () => {
+    expect(names).not.toContain('security')
+    expect(names).not.toContain('console')
+    expect(names).not.toContain('captcha')
+    expect(names).not.toContain('admin_users')
+  })
+
+  it('still flattens the single-field options into one basic group', () => {
+    expect(names[0]).toBe('__basic__')
+    const basic = groups[0]
+    expect(basic.items?.map((item) => item.name)).toContain('port')
+    expect(basic.items?.map((item) => item.name)).not.toContain('rewards')
   })
 })
 

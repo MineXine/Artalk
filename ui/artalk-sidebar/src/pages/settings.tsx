@@ -9,38 +9,7 @@ import { getArtalk } from '@/lib/artalk'
 import { errorMessage } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import settings, { type OptionNode } from '@/lib/settings'
-
-// Console branding has a page of its own (站点配置), so listing the same four
-// fields here would only make a second place to edit them.
-// `security` 与 `captcha` 由「安全防护」页面接管（含验证码服务商密钥），
-// `console` 有独立的「站点配置」页面，因此都不在系统设置里重复出现。
-const HIDDEN_ROOT_NODES = new Set(['admin_users', 'console', 'security', 'captcha'])
-
-/**
- * Root entries without children are flattened into one "general" section so the
- * index does not fill up with single-field categories such as `app_key`.
- */
-function buildRootGroups(tree: OptionNode): OptionNode[] {
-  const visible = (tree.items ?? []).filter((node) => !HIDDEN_ROOT_NODES.has(node.name))
-  const leaves = visible
-    .filter((node) => !node.items?.length)
-    .map((node) => ({ ...node, level: 2 }))
-
-  const groups = visible.filter((node) => !!node.items?.length)
-
-  if (leaves.length) {
-    groups.unshift({
-      name: '__basic__',
-      path: '__basic__',
-      level: 1,
-      type: 'object',
-      title: t('config'),
-      items: leaves,
-    })
-  }
-
-  return groups
-}
+import { buildRootGroups } from '@/lib/settings-sections'
 
 export function SettingsPage() {
   const [tree, setTree] = useState<OptionNode | null>(null)
