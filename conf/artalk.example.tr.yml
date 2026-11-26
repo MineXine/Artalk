@@ -261,10 +261,14 @@ rewards:
     vote_received: 1
     # Günlük giriş için verilen puan
     checkin: 10
+  # Kullanıcı rozetleri
   badges:
+    # Rozetleri etkinleştir
     enabled: false
     # Aynı anda takılabilecek rozet sayısı (şu an yalnızca 1)
     max_equipped: 1
+    # Otomatik vermeyi kapat (tüm rozetler yönetici tarafından verilir)
+    disable_auto_grant: false
   uid:
     enabled: false
     # Seviye başına puan cinsinden fiyat:

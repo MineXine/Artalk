@@ -255,33 +255,40 @@ security:
   exclude_paths: []
 
 # Points, badges and lucky-UID rewards
-# Both badges and lucky UIDs are bought with points, so they share one switch.
 rewards:
+  # Master switch (points, badges and lucky UIDs all depend on it)
   enabled: false
+  # How points are earned
   points:
-    # Points granted for each newly created comment
+    # Points for each new comment
     comment_create: 5
-    # Daily cap for comment points, so comment spam cannot farm a lucky UID
+    # Daily cap for comment points (stops spam farming a lucky UID)
     comment_create_daily_cap: 30
-    # Points granted for each upvote a comment receives
+    # Points for each upvote a comment receives
     vote_received: 1
-    # Points granted for the daily check-in
+    # Points for the daily check-in
     checkin: 10
+  # User badges
   badges:
+    # Enable badges
     enabled: false
     # How many badges can be worn at once (currently only 1 is supported)
     max_equipped: 1
+    # Turn off automatic grants (every badge is then handed out by an admin)
+    disable_auto_grant: false
+  # Lucky UID numbers
   uid:
+    # Enable buying a lucky number with points
     enabled: false
-    # Price in points, per tier:
-    #   s: every digit identical (88888)
-    #   a: sequential (12345) or palindrome (12321)
-    #   b: last three digits identical (12888)
-    #   c: last two digits identical (12388)
+    # Price per tier, in points
     price:
+      # Every digit identical (e.g. 88888)
       s: 8000
+      # Sequential or palindrome (e.g. 12345, 12321)
       a: 3000
+      # Last three digits identical (e.g. 12888)
       b: 1200
+      # Last two digits identical (e.g. 12388)
       c: 400
 
 # Console appearance

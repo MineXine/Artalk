@@ -36,6 +36,12 @@ type RewardsBadgeConf struct {
 	Enabled bool `koanf:"enabled" json:"enabled"`
 	// MaxEquipped 预留给"同时佩戴多枚"的扩展，当前只支持佩戴一枚。
 	MaxEquipped int `koanf:"max_equipped" json:"max_equipped"`
+
+	// DisableAutoGrant 关掉"条件达标自动发放"。
+	//
+	// 写成"禁用"而不是"启用"，是为了让零值与既有行为一致：老配置里没有
+	// 这一项时，条件徽章照常自动发放，不会因为升级而悄悄停掉。
+	DisableAutoGrant bool `koanf:"disable_auto_grant" json:"disable_auto_grant"`
 }
 
 // RewardsUIDConf 控制 UID 靓号兑换。

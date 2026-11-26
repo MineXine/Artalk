@@ -198,6 +198,11 @@ func (s *RewardsService) EvaluateBadgesForUser(userID uint) []entity.Badge {
 	if !conf.Enabled || !conf.Badges.Enabled || userID == 0 {
 		return nil
 	}
+	// 管理员关掉自动发放后，条件徽章仍留在徽章墙上展示进度，只是不再
+	// 自动送达——有些站点希望所有徽章都由人来授。
+	if conf.Badges.DisableAutoGrant {
+		return nil
+	}
 	d := s.app.Dao()
 	if d == nil {
 		return nil // 应用正在关闭

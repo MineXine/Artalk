@@ -279,10 +279,14 @@ rewards:
     vote_received: 1
     # 每日簽到獲得的積分
     checkin: 10
+  # 使用者徽章
   badges:
+    # 啟用徽章功能
     enabled: false
-    # 同時佩戴的徽章數量（目前僅支援 1）
+    # 同時佩戴的徽章數量 (目前僅支援 1)
     max_equipped: 1
+    # 關閉條件徽章自動發放 (關閉後全部由管理員手動授予)
+    disable_auto_grant: false
   uid:
     enabled: false
     # 各等級靚號的價格（積分）

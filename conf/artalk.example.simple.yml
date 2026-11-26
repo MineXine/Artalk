@@ -136,6 +136,7 @@ rewards:
   badges:
     enabled: false
     max_equipped: 1
+    disable_auto_grant: false
   uid:
     enabled: false
     price:

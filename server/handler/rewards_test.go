@@ -377,3 +377,55 @@ func TestRewardsBadgeCategories(t *testing.T) {
 	require.False(t, stored.IsEmpty(), "the badge itself must survive its category")
 	require.Zero(t, stored.CategoryID)
 }
+
+// TestRewardsAutoGrantDisabled 校验设置页里的"关闭自动发放"真的生效。
+func TestRewardsAutoGrantDisabled(t *testing.T) {
+	app, router := NewApiTestApp()
+	t.Cleanup(func() { require.NoError(t, app.Cleanup()) })
+
+	handler.BadgeAdminCreate(app.App, router)
+	enableRewards(t, app)
+
+	admin, err := common.LoginGetUserToken(app.Dao().FindUserByID(1000), app.Conf().AppKey, 60)
+	require.NoError(t, err)
+
+	var badge entity.Badge
+	require.NoError(t, json.Unmarshal(flowRequest(t, router, http.MethodPost, "/badges",
+		handler.ParamsBadgeUpsert{
+			Key: "first-comment", Name: "初次发声", GrantType: "condition",
+			ConditionKind: string(entity.BadgeConditionCommentCount), ConditionValue: 1,
+		}, admin, http.StatusOK), &badge))
+
+	svc, err := core.AppService[*core.RewardsService](app.App)
+	require.NoError(t, err)
+
+	// 默认是自动发放的，先确认基线
+	eager, err := app.Dao().FindCreateUser("AutoGrantOn", "auto-grant-on@example.org", "")
+	require.NoError(t, err)
+	page := app.Dao().FindCreatePage("/auto-on", "AutoOn", "Default Site")
+	require.NoError(t, app.Dao().CreateComment(&entity.Comment{
+		Content: "达标", UserID: eager.ID, PageKey: page.Key, SiteName: page.SiteName, IsVerified: true,
+	}))
+	require.Len(t, svc.EvaluateBadgesForUser(eager.ID), 1)
+
+	// 关掉自动发放
+	conf := app.Conf().Rewards
+	conf.Badges.DisableAutoGrant = true
+	app.Conf().Rewards = conf
+
+	quiet, err := app.Dao().FindCreateUser("AutoGrantOff", "auto-grant-off@example.org", "")
+	require.NoError(t, err)
+	quietPage := app.Dao().FindCreatePage("/auto-off", "AutoOff", "Default Site")
+	require.NoError(t, app.Dao().CreateComment(&entity.Comment{
+		Content: "同样达标", UserID: quiet.ID, PageKey: quietPage.Key, SiteName: quietPage.SiteName, IsVerified: true,
+	}))
+
+	require.Empty(t, svc.EvaluateBadgesForUser(quiet.ID))
+	require.True(t, app.Dao().FindUserBadge(quiet.ID, badge.ID).IsEmpty())
+
+	// 徽章仍留在墙上展示，进度照常计算——只是不再自动送达
+	wall := svc.ListBadgesForUser(quiet.ID)
+	require.Len(t, wall.Badges, 1)
+	require.False(t, wall.Badges[0].Owned)
+	require.True(t, wall.Badges[0].Achieved)
+}

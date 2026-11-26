@@ -204,10 +204,14 @@ rewards:
     vote_received: 1
     # Pontos pelo check-in diário
     checkin: 10
+  # Distintivos de utilizador
   badges:
+    # Ativar distintivos
     enabled: false
     # Quantos distintivos podem estar em uso ao mesmo tempo (apenas 1 por agora)
     max_equipped: 1
+    # Desativar a atribuição automática (passam todos a ser dados por um administrador)
+    disable_auto_grant: false
   uid:
     enabled: false
     # Preço em pontos, por nível:
