@@ -11,7 +11,7 @@ import {
 import { defaultPathFor } from '@/app/nav'
 import { AppShell } from '@/components/layout/AppShell'
 import { RoutePending } from '@/components/ui/RoutePending'
-import { session } from '@/lib/session'
+import { session, useSession } from '@/lib/session'
 import type { ModerationTab } from '@/pages/moderation'
 
 // Every page is its own chunk: the console opens inside a 430px iframe, so the
@@ -23,6 +23,7 @@ const ModerationPage = lazyRouteComponent(() => import('@/pages/moderation'), 'M
 const PagesPage = lazyRouteComponent(() => import('@/pages/pages'), 'PagesPage')
 const UsersPage = lazyRouteComponent(() => import('@/pages/users'), 'UsersPage')
 const BadgesPage = lazyRouteComponent(() => import('@/pages/badges'), 'BadgesPage')
+const MyBadgesPage = lazyRouteComponent(() => import('@/pages/my-badges'), 'MyBadgesPage')
 const SitesPage = lazyRouteComponent(() => import('@/pages/sites'), 'SitesPage')
 const TransferPage = lazyRouteComponent(() => import('@/pages/transfer'), 'TransferPage')
 const SettingsPage = lazyRouteComponent(() => import('@/pages/settings'), 'SettingsPage')
@@ -50,6 +51,18 @@ function requireAdmin() {
   // An admin browsing the "user" half of the console should see exactly what a
   // visitor sees, so admin-only pages bounce back to the visitor home.
   if (view === 'user') throw redirect({ to: '/activity' })
+}
+
+/**
+ * Pages that mean one thing to an admin and another to a visitor.
+ *
+ * /badges is the badge library in the management view and "my badges" in the
+ * visitor view, so only the management half needs admin rights.
+ */
+function requireAdminOrVisitor() {
+  requireLogin()
+  const { user, view } = session.get()
+  if (view !== 'user' && !user.is_admin) throw redirect({ to: '/comments' })
 }
 
 const rootRoute = createRootRoute({
@@ -104,6 +117,15 @@ const moderationRoute = createRoute({
   },
 })
 
+/**
+ * One route, two faces: the management view gets the badge library, the
+ * visitor view gets the caller's own badge wall.
+ */
+function BadgesRoute() {
+  const { view } = useSession()
+  return view === 'user' ? <MyBadgesPage /> : <BadgesPage />
+}
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   shellRoute.addChildren([
@@ -150,8 +172,8 @@ const routeTree = rootRoute.addChildren([
     createRoute({
       getParentRoute: () => shellRoute,
       path: '/badges',
-      beforeLoad: requireAdmin,
-      component: BadgesPage,
+      beforeLoad: requireAdminOrVisitor,
+      component: BadgesRoute,
     }),
     createRoute({
       getParentRoute: () => shellRoute,

@@ -119,11 +119,14 @@ export const NAV_ITEMS: NavItem[] = [
   {
     // The badge library sits next to users: it is the other half of "who is
     // who" — users hold badges, and admins define what can be held.
+    //
+    // Not admin-only: in the visitor view this same route is "my badges",
+    // which every signed-in user has. The page itself picks the view.
     id: 'badges',
     path: '/badges',
     titleKey: 'navBadges',
+    userTitleKey: 'navMyBadges',
     icon: Award,
-    adminOnly: true,
     group: 'community',
   },
   {
@@ -182,8 +185,8 @@ export const NAV_ITEMS: NavItem[] = [
   },
 ]
 
-/** The pages a visitor owns: their comments and their account. */
-const VISITOR_PAGES: PageId[] = ['activity', 'comments', 'account']
+/** The pages a visitor owns: their comments, badges and account. */
+const VISITOR_PAGES: PageId[] = ['activity', 'comments', 'badges', 'account']
 
 export function isAdminOnly(id: PageId): boolean {
   return !!NAV_ITEMS.find((item) => item.id === id)?.adminOnly

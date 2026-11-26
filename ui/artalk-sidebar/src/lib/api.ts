@@ -103,6 +103,17 @@ export type BadgeConditionKind =
 
 export type BadgeSource = 'condition' | 'exchange' | 'manual' | 'import'
 
+/** A badge category, used to group the badge wall. */
+export interface BadgeCategory {
+  id: number
+  created_at: string
+  updated_at: string
+  key: string
+  name: string
+  sort_order: number
+  enabled: boolean
+}
+
 /** A badge definition as stored in the library (no ownership attached). */
 export interface RewardsBadgeDefinition {
   id: number
@@ -113,6 +124,8 @@ export interface RewardsBadgeDefinition {
   color: string
   icon: string
   description: string
+  /** 0 means "uncategorised". */
+  category_id: number
   grant_type: BadgeGrantType
   condition_kind: BadgeConditionKind
   condition_value: number
@@ -135,18 +148,27 @@ export interface RewardsBadge extends RewardsBadgeDefinition {
 
 export interface RewardsBadgeList {
   badges: RewardsBadge[]
+  categories: BadgeCategory[]
   is_login: boolean
   points: number
   uid: number
 }
 
-/** The payload accepted by both create and update. */
-export interface BadgePayload {
+/** The payload accepted by both category create and update. */
+export interface CategoryPayload {
   key: string
+  name: string
+  sort_order?: number
+  enabled?: boolean
+}
+
+/** The payload accepted by both create and update. */
+export interface BadgePayload {  key: string
   name: string
   color?: string
   icon?: string
   description?: string
+  category_id?: number
   grant_type: BadgeGrantType
   condition_kind?: BadgeConditionKind
   condition_value?: number
@@ -198,6 +220,7 @@ export interface UidQuote {
 
 export interface UserBadgeList {
   badges: RewardsBadge[]
+  categories: BadgeCategory[]
   points: number
   uid: number
 }
@@ -214,12 +237,26 @@ export const rewardsApi = {
   listBadges: () => api<RewardsBadgeList>('/badges'),
 
   /** Admin view: every badge, including disabled ones, without ownership. */
-  adminList: () => api<{ badges: RewardsBadgeDefinition[] }>('/badges/all'),
+  adminList: () =>
+    api<{ badges: RewardsBadgeDefinition[]; categories: BadgeCategory[] }>('/badges/all'),
 
   create: (payload: BadgePayload) => api<RewardsBadge>('/badges', { method: 'POST', body: payload }),
   update: (id: number, payload: BadgePayload) =>
     api<RewardsBadge>(`/badges/${id}`, { method: 'PUT', body: payload }),
   remove: (id: number) => api<{ msg: string }>(`/badges/${id}`, { method: 'DELETE' }),
+
+  /** Import the built-in badge set. Idempotent: existing keys are kept. */
+  seedDefaults: () =>
+    api<{ categories: number; badges: number }>('/badges/seed-defaults', { method: 'POST' }),
+
+  listCategories: () => api<{ categories: BadgeCategory[] }>('/badge-categories'),
+  createCategory: (payload: CategoryPayload) =>
+    api<BadgeCategory>('/badge-categories', { method: 'POST', body: payload }),
+  updateCategory: (id: number, payload: CategoryPayload) =>
+    api<BadgeCategory>(`/badge-categories/${id}`, { method: 'PUT', body: payload }),
+  /** Deletes the category; its badges fall back to "uncategorised". */
+  removeCategory: (id: number) =>
+    api<{ moved: number }>(`/badge-categories/${id}`, { method: 'DELETE' }),
 
   exchange: (id: number) => api<{ points: number }>(`/badges/${id}/exchange`, { method: 'POST' }),
   equip: (id: number) => api<{ msg: string }>(`/badges/${id}/equip`, { method: 'POST' }),

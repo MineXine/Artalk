@@ -11,7 +11,9 @@ import {
 
 const ids = (items: { id: string }[]) => items.map((item) => item.id)
 
-const VISITOR_PAGES = ['activity', 'comments', 'account']
+// Badges is one of the visitor's own pages too: the same route is the badge
+// library for admins and "my badges" for everybody else.
+const VISITOR_PAGES = ['activity', 'comments', 'badges', 'account']
 
 describe('navigation by role and view', () => {
   it('gives a visitor only their own pages', () => {
